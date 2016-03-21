@@ -1,6 +1,15 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-
+"""
+一.
+利用了PyPDF2的工具包。符合PyPl的包都可以通过pip安装。
+安装步骤：1.在windowsshell 打开目录 cd
+          2.python setup.py install
+二.
+因为要发送给老师，所以编译过的包要在python27里的Lib/site-packages找，一起发送过去就可以顺利运行代码啦
+三.
+i3的CPU跑56个文档119秒，关键字查找抽样正确率70%，但有很多本应有但查找不到的情况。
+"""
 import os
 import re
 import time
@@ -45,7 +54,7 @@ def main():
                 count = words_count(text, root)
                 #if count=0 remove this file from the directory
                 if count == 0:
-                    pdf_file.close()
+                    pdf_file.close() #不然remove不到
                     os.remove(root)
                 write_into_txt(pdfname, count)
 
