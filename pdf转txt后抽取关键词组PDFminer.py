@@ -16,6 +16,9 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 
+#this path should be changed accordingly，全局变量
+path = u'E:\\最近任务\\实习资料\\姚老师\\2.7_R_to_Python\\paper'
+   
 #convert pdf to text， extract code from PDFminer, see its GitHub homepage for details
 def pdf_to_text(root):
     # PDFMiner boilerplate
@@ -58,8 +61,6 @@ def write_into_txt(pdfname, count):
 
 #create a pdf path and read one by one, maybe there are more than one folder
 def main():
-    path = u'E:\\最近任务\\实习资料\\姚老师\\2.7_R_to_Python\\paper'
-    #this path should be changed accordingly
     for rt, dirs, files in os.walk(path):
         for f in files:
             #just look for pdf files
