@@ -16,10 +16,16 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 
+"""
+考虑raw_input时应该如何输入
+"""
 #this path should be changed accordingly，全局变量
 path = u'E:\\最近任务\\实习资料\\姚老师\\2.7_R_to_Python\\paper'
    
 #convert pdf to text， extract code from PDFminer, see its GitHub homepage for details
+"""
+看懂人家源码
+"""
 def pdf_to_text(root):
     # PDFMiner boilerplate
     rsrcmgr = PDFResourceManager()
@@ -44,6 +50,9 @@ def pdf_to_text(root):
 #count M&A and [Mm]ergers and [Aa]cquisitions
 def words_count(text, root):
     count = 0
+    """
+    看re.findall源码实现
+    """
     count = len(re.findall('[Mm]ergers and [Aa]cquisitions', text)) + len(re.findall(r'M&A', text))
     if count == 0:
         os.remove(root) 
@@ -54,7 +63,7 @@ def words_count(text, root):
 
 #create a new text to store pdfname and words_count, then convert it to excel
 def write_into_txt(pdfname, count):
-    database = open('database2.txt', 'a')
+    database = open('database.txt', 'a')
     database.write(pdfname + '\t' + str(count) + '\n')
     #contents are saved in this format in .txt, later can be imported into an excel directly
     database.close()
