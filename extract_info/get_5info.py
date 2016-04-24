@@ -1,12 +1,9 @@
 #!/usr/bin/python2.7 -tt
 # -*- coding: UTF-8 -*-
 import os, re, time
-# import nltk
-
 """
 代码使用介绍：
 python型号为2.7.11，采用的编译器为Anconda2
-在搜索人名的时候使用了nltk包，其编译后的文件已经包含。修改路径名后代码应该能正常运行。
 运行时会显示正在处理第几个文档，结束后有总时长。运行结果包含在result.txt中，可以直接导入excel/csv。
 10个sample文档处理时间为23秒，正确率未检验。
 """
@@ -16,12 +13,10 @@ python型号为2.7.11，采用的编译器为Anconda2
 put_tag函数做的就是在给文件名前面写一个和csv同样顺序的数字标签，方便以后校对
 get_filename函数和find函数：对应ptah0的顺序读出文档名，在path中打开对应文档
 find_contracting_date函数实现查找合约日期，默认文档开头第一个提到的日期为目标，包含多种格式（目前一种）
-find_consultant_name将文档中含有的名字全部提出后，一个个搜索其附近是否出现consultant/consel字眼，若提到则输出，否则输出提到的第二个
-（根据文本和代码运行结果观察，第一个为公司名。*不一定正确）
 find_governing_law函数先抽取出州名，同样搜索附近是否出现governing law/governed，否则搜索state，若无结果者输出提到次数最多的
 find_consultant_zipcode函数在文档前1/4与后1/4找出5位数，与前面查到的地名/人名进行交叉确认
 find_confidentiality与find_non_compete都是查询关键字，若无则默认未提及，返回0
-最后按照number, exfilename, contracting_date, consultant, zipcode, law, confidentiality, non_compete顺序输出结果
+最后按照number, exfilename, contracting_date, zipcode, law, confidentiality, non_compete顺序输出结果
 """
 # 需要处理的文件夹
 path = u'I:\\consulting agreement'
@@ -29,9 +24,12 @@ path = u'I:\\consulting agreement'
 path0 = u'E:\\最近任务\\实习资料\\姚老师\\2.7_consulting_agreement_info\\read_sequence.txt'
 
 # 日期的全局变量,日期有如下格式：June 9,1995\28-Apr-96\1st day of June,1999
-PATTERN1 = '((january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)([/\-\,\s\_]+)(\d+)([/\-\,\s\_]+)(\d){2,4})'
-PATTERN2 = '|((\d){1,2}([/\-\,\s\_]+)(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)([/\-\,\s\_]+)(\d){2,4})'
-PATTERN3 = '|([0-9]+[st|th|rd|nd]([/\-\,\s\_\w]+)(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)([/\-\,\s\_]+)(\d){2,4})'
+PATTERN1 = '((january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|\
+sep|sept|oct|nov|dec)([/\-\,\s\_]+)(\d+)([/\-\,\s\_]+)(\d){2,4})'
+PATTERN2 = '|((\d){1,2}([/\-\,\s\_]+)(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|\
+mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)([/\-\,\s\_]+)(\d){2,4})'
+PATTERN3 = '|([0-9]+[st|th|rd|nd]([/\-\,\s\_\w]+)(january|february|march|april|may|june|july|august|september|october|november|december|\
+jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)([/\-\,\s\_]+)(\d){2,4})'
 PATTERNS = PATTERN1 + PATTERN2 + PATTERN3
 date_pattern = re.compile(PATTERNS, re.I | re.M)
 
@@ -75,44 +73,6 @@ def find_contracting_date(file):
     match = date_pattern.search(file)
     if match:
         return match.group()
-
-# 在文档前1/4寻找consultant而不搜索完全部文档，可加速
-def find_consultant_name(file):
-    file_front = file[0:int(len(file)/4)]
-    tokens = nltk.tokenize.word_tokenize(file_front)
-    pos = nltk.pos_tag(tokens)
-    sentt = nltk.ne_chunk(pos, binary = False)
-    person_list = []
-    person = []
-    name = ""
-    for subtree in sentt.subtrees(filter=lambda t: t.label() == 'PERSON'):
-        for leaf in subtree.leaves():
-            person.append(leaf[0])
-        if len(person) > 1: #avoid grabbing lone surnames
-            for part in person:
-                name += part + ' '
-            if name[:-1] not in person_list:
-                person_list.append(name[:-1])
-            name = ''
-        person = []
-    for i in range(len(person_list)):
-        chunk = '([\s\w\,\(\)\.]{50}?)(' + person_list[i] + ')([\s\w\,\(\)\.]{50}?)'
-        pattern = re.compile(chunk, re.M)
-        match = pattern.findall(file)
-        for j in range(len(match)):
-            for k in match[j]:
-                search = k.split(' ')
-                if ('consultant' in search) or ('consel' in search):
-                    return match[j][1]
-    else:
-        if len(person_list) > 2:
-            return person_list[1]
-        else:
-            return 'Not Found'
-    """
-    通过调查文档发现，有时别的名字会比目标先通过‘在consultant’这个词附近而直接返回结果。
-    下一步的工作是把符合条件的弄成list，再计算频率，靠近consultant的次数越多，则更可能为目标
-    """
 
 # 先抽取出州名，同样搜索附近是否出现governing law/governed，否则搜索state，若无结果者输出提到次数最多的 *由于观察的文档不多，这种规则不一定对
 def find_governing_law(file):
